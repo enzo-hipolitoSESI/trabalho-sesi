@@ -1,9 +1,9 @@
+require('dotenv').config()
 const { Sequelize } = require('sequelize')
 
-const db = new Sequelize('db_compras', 'root', 'root', {
-    host: 'localhost',
+const db = new Sequelize(process.env.MYSQL_URL || process.env.DATABASE_URL, {
     dialect: 'mysql',
-    port: 3306
+    logging: false
 })
 
-module.exports = db;
+module.exports = db

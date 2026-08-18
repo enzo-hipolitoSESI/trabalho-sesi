@@ -1,7 +1,8 @@
 const express = require('express')
 const cors = require('cors')
 const app = express()
-const PORT = 3000
+const PORT = process.env.PORT || 3000
+const HOST = '0.0.0.0'
 const db = require('./db/conn')
 const CompraController = require('./controller/Compra.controller')
 const ProdutoController = require('./controller/Produto.controller')
@@ -11,6 +12,10 @@ const RelatVWController = require('./controller/relatVW.controller')
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(cors())
+
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' })
+})
 
 // Rotas de Compras
 app.get('/compras/listar', CompraController.listar)
@@ -41,8 +46,8 @@ app.get('/relatorio/volume-compras', RelatVWController.listarPorCategorias)
 
 db.sync()
     .then(() => {
-        app.listen(PORT, () => {
-            console.log(`Servidor iniciado na porta ${PORT}`)
+        app.listen(PORT, HOST, () => {
+            console.log(`Servidor iniciado em ${HOST}:${PORT}`)
         })
     })
     .catch((err) => {
