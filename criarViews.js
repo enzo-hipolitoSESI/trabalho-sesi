@@ -5,7 +5,7 @@ const criarViewsSistema = async () => {
 
     // 1. View de Produtos Críticos (Ajustada para usar a coluna qtdeEstoque)
     const queryProdutosCriticos = `
-        CREATE OR REPLACE VIEW vw_produtos_criticos AS
+        CREATE VIEW vw_produtos_criticos AS
         SELECT
             codProduto AS codigo_produto,
             nome,
@@ -17,7 +17,7 @@ const criarViewsSistema = async () => {
 
     // 2. View de Volume de Compras e Valores Financeiros Acumulados por Produto
     const queryVolumeCompras = `
-        CREATE OR REPLACE VIEW vw_volume_compras AS
+        CREATE VIEW vw_volume_compras AS
         SELECT
             p.nome AS nome,
             SUM(c.qtdeMov) AS quantidade_total_movimentada,
@@ -29,6 +29,19 @@ const criarViewsSistema = async () => {
     `
 
     try {
+        const [objetosExistentes] = await conn.query(`
+            SELECT TABLE_NAME, TABLE_TYPE
+            FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_SCHEMA = DATABASE()
+            AND TABLE_NAME IN ('vw_produtos_criticos', 'vw_volume_compras');
+        `)
+
+        for (const objeto of objetosExistentes) {
+            const comandoDrop = objeto.TABLE_TYPE === 'VIEW' ? 'DROP VIEW' : 'DROP TABLE'
+            await conn.query(`${comandoDrop} IF EXISTS \`${objeto.TABLE_NAME}\``)
+            console.log(`${objeto.TABLE_NAME} removida antes da recriacao.`)
+        }
+
         // Executa a criação da primeira view
         await conn.query(queryProdutosCriticos)
         console.log('» View [vw_produtos_criticos] criada ou atualizada com sucesso!')
